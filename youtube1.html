@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="inp">
+        <input type="text" id="input">
+        <button id="btn">Search</button>
+    </div>
+    <div id="results"></div>
+    <script>
+        
+        var types={
+            video:"youtube#video",
+            channel:"youtube#channel"
+        }
+        Object.freeze(types)
+
+
+        window.addEventListener("load",function(){
+            const btn =document.getElementById("btn")
+            btn.addEventListener("click",handleSearch)
+        })
+
+        function getYoutubeSearchResults(q){
+         return  fetch(`https://youtube.googleapis.com/youtube/v3/search?part=snippet&q=${q}&key=AIzaSyBu1A1yUTY8T-DnNe6EUG9nLMuOz9eaBug&maxResults=20`)
+        .then(res=>res.json())
+        }
+
+        function createYoutubeVideoCards(data){
+            const div=document.createElement("div")
+
+            //ignore channel
+            if(data.id.kind === types.channel){
+                return false
+            }
+
+            div.innerHTML=`<iframe
+             width="560" 
+             height="315"
+              src="https://www.youtube.com/embed/${data.id.videoId}"
+               title="YouTube video player"
+                frameborder="0"
+                 allow="accelerometer; 
+                 autoplay; clipboard-write; 
+                 encrypted-media; gyroscope;
+                  picture-in-picture"
+                   allowfullscreen></iframe>`
+                   return div
+        }
+
+        
+
+       async function  handleSearch(){
+           const search = document.querySelector("#input").value
+           try{
+               const{
+                   items:results,
+                   pageInfo:{
+                       resultsPerPage,
+                       totalResults
+                   }
+               }=await getYoutubeSearchResults(search)
+               console.log(results,resultsPerPage,totalResults)
+               const allCards=[]
+               for(let video of results){
+                   const card = createYoutubeVideoCards(video)
+                   if(card){
+                       allCards.push(card)
+                   }
+               }
+               const resContainer = document.getElementById("results")
+               resContainer.innerHTML=null
+               resContainer.append(...allCards)
+           }
+           catch(err){
+
+           }
+       }
+    </script>
+
+</body>
+</html>
